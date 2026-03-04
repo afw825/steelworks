@@ -126,7 +126,7 @@ docs/
 ### Prerequisites
 
 - Python 3.10+
-- pytest installed in your environment
+- Poetry installed
 
 ### Step 1: Open Project
 
@@ -137,7 +137,7 @@ cd markdown_demo
 ### Step 2: Ensure pytest is available
 
 ```bash
-python -m pip install pytest
+poetry install
 ```
 
 ---
@@ -158,7 +158,7 @@ Current executable scope:
 Run only AC1 test:
 
 ```bash
-python -m pytest tests/unit/test_recurring_defect_analyzer.py -k ac1 -q
+poetry run pytest tests/unit/test_recurring_defect_analyzer.py -k ac1 -q
 ```
 
 Expected result:
@@ -167,7 +167,7 @@ Expected result:
 ### Example 2: View Full Current Unit Scaffold Status
 
 ```bash
-python -m pytest tests/unit -q
+poetry run pytest tests/unit -q
 ```
 
 Expected result:
@@ -181,13 +181,13 @@ Expected result:
 ### Run Implemented Test Only
 
 ```bash
-python -m pytest tests/unit/test_recurring_defect_analyzer.py::test_ac1_definition_of_recurring_multi_lot_multi_week -q
+poetry run pytest tests/unit/test_recurring_defect_analyzer.py::test_ac1_definition_of_recurring_multi_lot_multi_week -q
 ```
 
 ### Run Analyzer Test File
 
 ```bash
-python -m pytest tests/unit/test_recurring_defect_analyzer.py -q
+poetry run pytest tests/unit/test_recurring_defect_analyzer.py -q
 ```
 
 ### Acceptance Criteria Coverage (Current Branch)
