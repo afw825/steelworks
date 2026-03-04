@@ -29,30 +29,29 @@ This distinction helps prioritize systemic process improvements over isolated co
 
 ### Solution Overview
 
-This branch currently provides a **scaffold-first implementation** for the recurring defect user story.
+This project provides an implemented recurring defect analysis flow for the steelworks quality engineering use case.
 
 Current state:
 
-1. **Scaffolded Architecture**: Domain, ingestion, analysis, presentation, and use-case layers are defined.
-2. **Incremental Delivery**: First unit test and related business logic are implemented.
-3. **Future-safe Contracts**: Remaining ACs are represented as stubs for controlled step-by-step implementation.
+1. **Layered Architecture Implemented**: Domain, ingestion, analysis, presentation, and use-case layers are wired end-to-end.
+2. **Acceptance Coverage Implemented**: AC1–AC9 unit test coverage is present and runnable.
+3. **Poetry-Managed Workflow**: Dependencies and test execution are standardized with Poetry commands.
 
-### Key Features (Current Branch Status)
+### Key Features
 
 ✅ **Implemented Now**
-- AC1 core path: recurring defect classification for multi-lot + multi-week in analyzer.
-- First unit test passing for AC1 scenario.
-
-🚧 **Scaffolded (Not Implemented Yet)**
-- AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9 logic paths.
-- Non-first unit tests (stubs only).
-- Integration tests (intentionally not added yet).
+- Recurring defect classification across lots and weeks.
+- Single-lot isolation handling and zero-defect exclusion.
+- Incomplete-data classification to insufficient-data trend state.
+- Recurring-only filtering and prioritization logic.
+- Defect drill-down details with missing-period messaging.
+- Unit test suite covering AC1–AC9 (all passing).
 
 ---
 
 ## Architecture
 
-### Layered Architecture (Scaffold)
+### Layered Architecture
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -112,12 +111,12 @@ docs/
 
 | Component | Technology | Status |
 |-----------|-----------|--------|
-| Language | Python | Scaffold + partial implementation |
-| Testing | pytest | Unit stubs + first implemented unit test |
+| Language | Python | Implemented recurring defect analysis workflow |
+| Testing | pytest | AC1–AC9 unit tests implemented and passing |
 | Data Model Reference | PostgreSQL schema (SQL) | Defined in `db/schema.sql` |
 | Architecture Source | ADR + Data Design docs | In `docs/` |
 
-> Note: This branch is intentionally scaffold-focused and may not include full runtime/dependency wiring.
+> Note: This project currently focuses on domain logic and unit-tested analysis flows. Integration runtime (for production data adapters/UI) can be added on top of the existing contracts.
 
 ---
 
@@ -131,7 +130,7 @@ docs/
 ### Step 1: Open Project
 
 ```bash
-cd markdown_demo
+cd steelworks
 ```
 
 ### Step 2: Ensure pytest is available
@@ -144,10 +143,9 @@ poetry install
 
 ## How to Run / Build
 
-This branch does not yet provide a complete runnable app build.
-
 Current executable scope:
-- Unit tests (first implemented test and scaffold stubs)
+- Domain logic and unit tests for recurring defect analysis.
+- No standalone web app/UI runtime in this repository yet.
 
 ---
 
@@ -164,21 +162,20 @@ poetry run pytest tests/unit/test_recurring_defect_analyzer.py -k ac1 -q
 Expected result:
 - `1 passed` for AC1 test.
 
-### Example 2: View Full Current Unit Scaffold Status
+### Example 2: Run Full Unit Test Suite
 
 ```bash
 poetry run pytest tests/unit -q
 ```
 
 Expected result:
-- First analyzer test passes.
-- Remaining tests are skipped (stub markers).
+- All unit tests pass.
 
 ---
 
 ## Running Tests
 
-### Run Implemented Test Only
+### Run AC1 Test Only
 
 ```bash
 poetry run pytest tests/unit/test_recurring_defect_analyzer.py::test_ac1_definition_of_recurring_multi_lot_multi_week -q
@@ -190,27 +187,31 @@ poetry run pytest tests/unit/test_recurring_defect_analyzer.py::test_ac1_definit
 poetry run pytest tests/unit/test_recurring_defect_analyzer.py -q
 ```
 
-### Acceptance Criteria Coverage (Current Branch)
+### Acceptance Criteria Coverage
 
 | AC | Status | Evidence |
 |----|--------|----------|
-| AC1 | ✅ Implemented | `RecurringDefectAnalyzer.classify_defect_trends` + first unit test |
-| AC2 | 🚧 Stub only | test stub present |
-| AC3 | 🚧 Stub only | test stub present |
-| AC4 | 🚧 Stub only | test stub present |
-| AC5 | 🚧 Stub only | presenter/list stubs + test stub |
-| AC6 | 🚧 Stub only | presenter/filter stubs + test stub |
-| AC7 | 🚧 Stub only | drill-down stubs + test stub |
-| AC8 | 🚧 Stub only | messaging stubs + test stub |
-| AC9 | 🚧 Stub only | prioritization stubs + test stub |
+| AC1 | ✅ Implemented | `RecurringDefectAnalyzer.classify_defect_trends` + analyzer unit test |
+| AC2 | ✅ Implemented | Single-lot not-recurring analyzer unit test |
+| AC3 | ✅ Implemented | Zero-defect exclusion analyzer unit test |
+| AC4 | ✅ Implemented | Incomplete-data insufficient classification unit test |
+| AC5 | ✅ Implemented | List view required fields presenter unit test |
+| AC6 | ✅ Implemented | Recurring highlight + recurring-only filter unit test |
+| AC7 | ✅ Implemented | Defect-code drill-down detail unit test |
+| AC8 | ✅ Implemented | Missing-period insufficient-data message unit test |
+| AC9 | ✅ Implemented | Prioritization and sorting analyzer unit test |
+
+Current suite status:
+- `poetry run pytest -q`
+- `9 passed`
 
 ---
 
 ## Configuration
 
-Current branch does not require environment variables for scaffold validation.
+Current project does not require environment variables for unit-test validation.
 
-When runtime/data adapters are implemented later, configuration is expected to include:
+When runtime/data adapters are implemented later, configuration may include:
 - Database connection URL
 - Optional UI/runtime toggles
 
@@ -218,14 +219,14 @@ When runtime/data adapters are implemented later, configuration is expected to i
 
 ## Key Design Decisions
 
-The implementation and scaffolding align to the project documents:
+The implementation aligns to the project documents:
 
 1. **Stateless Modular Monolith**
 	 - Separation of ingestion, analysis, and presentation concerns.
 2. **Fail-Soft Direction**
 	 - Contracts are designed to support indeterminate/incomplete data handling.
-3. **User-story-first Incremental Delivery**
-	 - Implement one AC path at a time with matching unit tests.
+3. **User-story-aligned Delivery**
+	 - AC1–AC9 behavior is covered by matching unit tests.
 
 Reference docs:
 - `docs/architecture_decision_records.md`
@@ -237,14 +238,14 @@ Reference docs:
 
 ## What to Change for Production
 
-When progressing from this scaffold branch to production-ready implementation:
+When progressing from this implementation to production-ready deployment:
 
-1. Implement remaining AC business logic (AC2-AC9).
-2. Replace all unit test stubs with real assertions.
-3. Add dependency management and reproducible environment config.
-4. Add integration tests and CI checks.
-5. Add runtime configuration (database, logging, deployment settings).
+1. Add concrete ingestion adapters for live/external sources.
+2. Add integration tests and CI checks.
+3. Add deployment/runtime packaging and environment-specific config.
+4. Add observability (logging/metrics) and operational hardening.
+5. Add user-facing interface (if required) for list/drill-down workflows.
 
 ---
 
-**Last Updated**: February 2026
+**Last Updated**: March 2026
