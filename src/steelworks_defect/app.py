@@ -7,6 +7,8 @@ Fallback source: `.env.test`
 from __future__ import annotations
 
 from dataclasses import asdict
+import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import os
 import sys
@@ -24,6 +26,9 @@ from steelworks_defect.ingestion import SqlInspectionEventGateway
 from steelworks_defect.use_cases import RecurringDefectAnalysisUseCase
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 def _project_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
@@ -39,6 +44,29 @@ def _load_env_file() -> None:
         load_dotenv(dotenv_path=fallback_env_path)
 
 
+def _configure_logging() -> None:
+    project_root = _project_root()
+    log_dir = project_root / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    root_logger = logging.getLogger()
+    if root_logger.handlers:
+        return
+
+    root_logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(module)s | %(message)s"
+    )
+    file_handler = RotatingFileHandler(
+        log_dir / "steelworks.log",
+        maxBytes=5 * 1024 * 1024,
+        backupCount=3,
+        encoding="utf-8",
+    )
+    file_handler.setFormatter(formatter)
+    root_logger.addHandler(file_handler)
+
+
 def _summary_to_row(summary: object) -> dict[str, object]:
     summary_dict = asdict(summary)
     summary_dict["trend_classification"] = summary_dict["trend_classification"].value
@@ -46,13 +74,18 @@ def _summary_to_row(summary: object) -> dict[str, object]:
 
 
 def main() -> None:
+    _configure_logging()
+    LOGGER.info("Application startup")
+
     st.set_page_config(page_title="SteelWorks Defect Dashboard", layout="wide")
     st.title("🏭 SteelWorks Defect Dashboard")
+    LOGGER.info('User opened the "Recurring Defects" page')
 
     _load_env_file()
     database_url = os.getenv("DATABASE_URL")
 
     if not database_url:
+        LOGGER.error("Missing DATABASE_URL configuration")
         st.error(
             "DATABASE_URL not found. Add DATABASE_URL to .env "
             "(or .env.test as fallback) and retry."
@@ -64,6 +97,7 @@ def main() -> None:
     use_case = RecurringDefectAnalysisUseCase(gateway=gateway, analyzer=analyzer)
 
     if not gateway.has_required_schema_objects():
+        LOGGER.warning("Missing required database schema objects")
         st.error(
             "Required database objects were not found. "
             "The app expects tables under the operations schema (for example: "
@@ -76,16 +110,19 @@ def main() -> None:
 
         if st.button("Initialize Local Database"):
             try:
+                LOGGER.info("Initializing local database")
                 project_root = _project_root()
                 gateway.initialize_database(
                     schema_sql_path=project_root / "db" / "schema.sql",
                     seed_sql_path=project_root / "db" / "seed.sql",
                 )
             except Exception as error:
+                LOGGER.exception("Unexpected exception during database initialization")
                 st.error("Database initialization failed.")
                 st.exception(error)
                 st.stop()
 
+            LOGGER.info("Local database initialized successfully")
             st.success("Database initialized successfully. Re-running app...")
             st.rerun()
 
@@ -95,6 +132,7 @@ def main() -> None:
         recurring_only = st.checkbox("Show recurring defects only", value=False)
         summaries = use_case.get_defect_trend_list(recurring_only=recurring_only)
     except Exception as error:
+        LOGGER.exception("Unexpected exception while loading recurring defects list")
         st.error("Failed to load inspection data from your local database.")
         st.exception(error)
         st.stop()
@@ -102,8 +140,11 @@ def main() -> None:
     st.subheader("Defect Trend List")
 
     if not summaries:
+        LOGGER.info("No defect trends found for current dataset")
         st.info("No defect trends were found with the current data.")
         st.stop()
+
+    LOGGER.info("Defect trend list loaded total_rows=%s", len(summaries))
 
     summary_rows = [_summary_to_row(summary) for summary in summaries]
     st.dataframe(pd.DataFrame(summary_rows), use_container_width=True)
@@ -118,11 +159,19 @@ def main() -> None:
     try:
         drilldown = use_case.get_defect_drilldown(selected_defect_id)
     except Exception as error:
+        LOGGER.exception(
+            "Unexpected exception while loading defect drilldown defect_type=%s",
+            selected_defect_id,
+        )
         st.error("Failed to load drilldown details from your local database.")
         st.exception(error)
         st.stop()
 
     if drilldown.insufficient_data_message:
+        LOGGER.warning(
+            "Missing inspection data for drilldown defect_type=%s",
+            selected_defect_id,
+        )
         st.warning(drilldown.insufficient_data_message)
 
     if drilldown.events:
