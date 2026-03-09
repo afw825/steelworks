@@ -11,6 +11,7 @@ Quality engineering tool for identifying and analyzing defects that appear acros
 - [How to Run / Build](#how-to-run--build)
 - [Usage Examples](#usage-examples)
 - [Running Tests](#running-tests)
+- [Running E2E Tests (Playwright)](#running-e2e-tests-playwright)
 - [Configuration](#configuration)
 - [Key Design Decisions](#key-design-decisions)
 - [What to Change for Production](#what-to-change-for-production)
@@ -145,7 +146,17 @@ poetry install
 
 Current executable scope:
 - Domain logic and unit tests for recurring defect analysis.
-- No standalone web app/UI runtime in this repository yet.
+- Streamlit runtime for local interactive validation against your database.
+
+### Run Streamlit App (Real DB via .env)
+
+1. Set `DATABASE_URL` in `.env` (example: PostgreSQL URL).
+2. Ensure your local database is running and includes the `operations` schema.
+3. Launch the app:
+
+```bash
+poetry run streamlit run src/steelworks_defect/app.py
+```
 
 ---
 
@@ -207,9 +218,46 @@ Current suite status:
 
 ---
 
+## Running E2E Tests (Playwright)
+
+### Install Playwright test dependencies
+
+```bash
+poetry install
+```
+
+### Install browser binaries
+
+```bash
+poetry run playwright install
+```
+
+### Run E2E suite only
+
+```bash
+poetry run pytest tests/e2e -m e2e -q
+```
+
+E2E database source:
+- `.env.test` must contain `DATABASE_URL` pointing to your local test DB.
+
+### Run all tests (unit + e2e)
+
+```bash
+poetry run pytest -q
+```
+
+---
+
 ## Configuration
 
 Current project does not require environment variables for unit-test validation.
+
+For Streamlit runtime, expected environment variable in `.env`:
+- `DATABASE_URL`: connection string for your local database.
+
+For E2E runtime, expected environment variable in `.env.test`:
+- `DATABASE_URL`: connection string for your local test database.
 
 When runtime/data adapters are implemented later, configuration may include:
 - Database connection URL
