@@ -1,0 +1,39 @@
+# VCS
+.git
+.gitignore
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Tooling and editor
+.vscode/
+.idea/
+
+# Local data and logs
+logs/
+*.log
+
+# Local environment files (pass via --env-file at runtime instead)
+.env
+.env.*
+
+# Project docs and tests not needed in runtime image
+tests/
+docs/
+
+# OS files
+.DS_Store
+Thumbs.db
