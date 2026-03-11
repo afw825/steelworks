@@ -39,3 +39,6 @@ poetry.toml
 # IDE/editor settings
 .vscode/
 .idea/
+
+# log files
+logs/
