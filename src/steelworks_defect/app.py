@@ -16,6 +16,7 @@ import sys
 from dotenv import load_dotenv
 import pandas as pd
 import streamlit as st
+import sentry_sdk
 
 SRC_PATH = Path(__file__).resolve().parents[1]
 if str(SRC_PATH) not in sys.path:
@@ -84,7 +85,7 @@ def main() -> None:
     _load_env_file()
     database_url = os.getenv("DATABASE_URL")
 
-    import sentry_sdk
+    #sentry config
     sentry_sdk.init(
         dsn = os.getenv("SENTRY_DSN"),
         send_default_pii=False,
