@@ -84,6 +84,15 @@ def main() -> None:
     _load_env_file()
     database_url = os.getenv("DATABASE_URL")
 
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn = os.getenv("SENTRY_DSN"),
+        send_default_pii=False,
+        traces_sample_rate=0.0,
+        enable_logs=False,
+    )
+    divide_by_zero = 1/0
+
     if not database_url:
         LOGGER.error("Missing DATABASE_URL configuration")
         st.error(
